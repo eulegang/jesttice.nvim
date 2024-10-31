@@ -15,7 +15,7 @@ local diag_namespace = vim.api.nvim_create_namespace("jesttice")
 
 --- @class Coverage
 --- @field statementMap { [string]: { start: { line: number, column: number }, end: { line: number, column: number } } }
-
+--- @field s { [string]: number }
 
 --- @param data { numPassedTests: number, numTotalTests: number, testResults: TestResults[], coverageMap: { [string]: Coverage } }
 --- @param code string
@@ -44,19 +44,21 @@ local function report(data, base, code, test, success)
     end
   end
 
-  -- local coverage = data.coverageMap[base .. "/" .. code]
-  --
-  -- for _, stat in pairs(coverage.statementMap) do
-  --   local cov_start = stat.start.line
-  --   local cov_end = stat["end"].line
-  --
-  --   vim.fn.sign_place(0, "jesttice", "JestticeCovered", code_buf, {
-  --     lnum = cov_start,
-  --     priority = 5
-  --   })
-  -- end
-  --
-  -- print(vim.inspect(coverage))
+  local coverage = data.coverageMap[base .. "/" .. code]
+
+  vim.fn.sign_unplace("jesttice", { buffer = code_buf })
+
+  for spot, hits in pairs(coverage.s) do
+    local t = hits == 0 and "JestticeUncovered" or "JestticeCovered"
+    local lnum = coverage.statementMap[spot].start.line
+
+    vim.fn.sign_place(0, "jesttice", t, code_buf, {
+      lnum = lnum,
+      priority = 5
+    })
+  end
+
+  print(vim.inspect(coverage))
 
   print("passed " .. data.numPassedTests .. " / " .. data.numTotalTests)
 end
@@ -71,11 +73,17 @@ local function setup(opts)
 
   group = vim.api.nvim_create_augroup("jesttice", { clear = true })
 
-  -- vim.fn.sign_define("JestticeCovered",
-  --   {
-  --     text = "█",
-  --     texthl = "Statement",
-  --   })
+  vim.fn.sign_define("JestticeCovered",
+    {
+      text = "█",
+      texthl = "Statement",
+    })
+
+  vim.fn.sign_define("JestticeUncovered",
+    {
+      text = "█",
+      texthl = "Error",
+    })
 
   vim.api.nvim_create_autocmd({ "BufWrite" }, {
     pattern = { '*.js', '*.ts', '*.jsx', '*.tsx' },

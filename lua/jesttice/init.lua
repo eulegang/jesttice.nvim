@@ -98,6 +98,11 @@ local function setup(opts)
         test = testswitch.counterpart(args.file)
       end
 
+      if test == nil or code == nil then
+        vim.notify("not running test (no pair)")
+        return
+      end
+
       local base = vim.fn.getcwd()
       local key = str.gsub(base .. '/' .. code, "/", "#")
       local output = vim.fn.stdpath("state") .. "/jesttice/output/" .. key

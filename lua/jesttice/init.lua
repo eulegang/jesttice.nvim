@@ -61,7 +61,11 @@ local function report(data, base, code, test, success)
   print("passed " .. data.numPassedTests .. " / " .. data.numTotalTests)
 end
 
---- @param opts { config?: string }
+--- @class Configuration
+--- @field config string | nil
+--- @field purge boolean | nil
+
+--- @param opts Configuration
 local function setup(opts)
   vim.fn.mkdir(vim.fn.stdpath("state") .. "/jesttice/output", "p")
 
@@ -100,7 +104,9 @@ local function setup(opts)
         on_exit = function(_, status)
           local success = status == 0
           local data = vim.fn.json_decode(vim.fn.readfile(output))
-          --vim.fn.delete(output)
+          if opts.purge ~= false then
+            vim.fn.delete(output)
+          end
 
           report(data, base, code, test, success)
         end,

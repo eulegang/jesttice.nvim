@@ -8,7 +8,7 @@ local cmd = nil
 
 local function enable()
   if cmd == nil then
-    cmd = vim.api.nvim_create_autocmd({ "BufWrite" }, {
+    cmd = vim.api.nvim_create_autocmd({ "BufRead", "BufWrite" }, {
       pattern = { '*.js', '*.ts', '*.jsx', '*.tsx' },
       group = group,
       callback = function(args)

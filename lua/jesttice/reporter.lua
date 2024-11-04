@@ -51,7 +51,7 @@ end
 
 --- @param jest JestResult
 local function report_summary(jest)
-  vim.notify("passed " .. jest.numPassedTests .. " / " .. jest.numTotalTests)
+  vim.notify("passed " .. jest.numPassedTests .. " / " .. jest.numTotalTests, vim.log.levels.INFO)
 end
 
 --- @param jest JestResult

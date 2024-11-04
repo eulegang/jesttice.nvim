@@ -22,7 +22,7 @@ local function enable()
         end
 
         if test == nil or code == nil then
-          vim.notify("not running test (no pair)")
+          vim.notify("not running test (no pair)", vim.log.levels.ERROR)
           return
         end
 

@@ -19,7 +19,7 @@ function M.start(test, code)
     cmd = cmd .. " --config " .. opts.config
   end
 
-  vim.notify("running " .. cmd, vim.log.levels.INFO)
+  vim.notify("running " .. cmd, vim.log.levels.DEBUG)
 
   local job = vim.fn.jobstart(cmd, {
     on_exit = function(_, status)

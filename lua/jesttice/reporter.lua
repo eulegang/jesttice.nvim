@@ -21,8 +21,67 @@ local function report_test_diagnostics(base, file, buf, jest)
             col = tonumber(col) - 1,
             message = message,
             severity = vim.diagnostic.severity.ERROR,
-            source = "jesttice"
+            source = "jesttice",
           }
+        })
+      end
+    end
+  end
+end
+
+--- @param base string
+--- @param file string
+--- @param buf number
+--- @param jest JestResult
+local function report_test_signs(base, file, buf, jest)
+  local tree = vim.treesitter.get_parser(buf):parse(true)[1]
+  local query = vim.treesitter.query.get("typescript", "jesttice-test")
+
+  print(vim.inspect(tree))
+
+  local node = tree:root()
+  print(vim.inspect({
+    start = { node:start() },
+    e = { node:end_() },
+    range = { node:range() },
+    tree = tree,
+  }))
+
+  if query ~= nil and tree ~= nil then
+    for id, n in query:iter_captures(node, buf, 0, -1) do
+      if id == 2 then
+        local srow, _, _ = n:start()
+        local erow, _, _ = n:end_()
+        srow = srow + 1
+        erow = erow + 1
+
+        local pass = true
+
+        for __, result in ipairs(jest.testResults) do
+          for _, assert in pairs(result.assertionResults) do
+            for _, message in pairs(assert.failureMessages) do
+              local _, _, row, _ = message:find(file .. ":(%d+):(%d+)")
+
+              if srow <= tonumber(row) and tonumber(row) <= erow then
+                pass = false
+              end
+            end
+          end
+        end
+
+        print(vim.inspect({
+          id = id,
+          pass = pass,
+          srow = srow,
+          erow = erow,
+        }))
+
+        local t = pass and "JestticePass" or "JestticeFail"
+        local lnum = srow
+
+        vim.fn.sign_place(0, "jesttice", t, buf, {
+          lnum = lnum,
+          priority = 5
         })
       end
     end
@@ -63,6 +122,7 @@ function M.report(jest, base, code, test, success)
   local code_buf = vim.fn.bufadd(code)
 
   report_test_diagnostics(base, test, test_buf, jest)
+  report_test_signs(base, test, test_buf, jest)
   report_coverage_signs(base, code, code_buf, jest)
   report_summary(jest)
 end
@@ -70,6 +130,14 @@ end
 --- @param o Configuration
 function M.configure(o)
   opts = o
+
+  vim.diagnostic.config({
+    signs = {
+      text = {
+        [vim.diagnostic.severity.ERROR] = '',
+      }
+    }
+  }, diag_namespace)
 
   vim.fn.sign_define("JestticeCovered",
     {
@@ -82,6 +150,16 @@ function M.configure(o)
       text = "█",
       texthl = "Error",
     })
+
+  vim.fn.sign_define("JestticePass", {
+    text = "✓",
+    texthl = "Property",
+  })
+
+  vim.fn.sign_define("JestticeFail", {
+    text = "!",
+    texthl = "Error",
+  })
 end
 
 return M

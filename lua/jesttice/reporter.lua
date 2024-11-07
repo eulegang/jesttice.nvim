@@ -1,5 +1,4 @@
 local M = {}
-local opts = {}
 
 local diag_namespace = vim.api.nvim_create_namespace("jesttice")
 
@@ -17,7 +16,6 @@ end
 function M.report_test_diagnostics(base, file, buf, jest)
   local pattern = escape_pattern(file) .. ":(%d+):(%d+)"
   vim.diagnostic.reset(diag_namespace, buf)
-
   for _, result in pairs(jest.testResults) do
     for _, assert in pairs(result.assertionResults) do
       for _, message in pairs(assert.failureMessages) do
@@ -128,16 +126,14 @@ function M.report(jest, base, code, test, success)
   local test_buf = vim.fn.bufadd(test)
   local code_buf = vim.fn.bufadd(code)
 
-  report_test_diagnostics(base, test, test_buf, jest)
-  report_test_signs(base, test, test_buf, jest)
-  report_coverage_signs(base, code, code_buf, jest)
+  M.report_test_diagnostics(base, test, test_buf, jest)
+  M.report_test_signs(base, test, test_buf, jest)
+  M.report_coverage_signs(base, code, code_buf, jest)
   report_summary(jest)
 end
 
 --- @param o Configuration
 function M.configure(o)
-  opts = o
-
   vim.diagnostic.config({
     signs = {
       text = {

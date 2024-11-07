@@ -1,4 +1,3 @@
-local testswitch = require("testswitch")
 local watch = require("jesttice.watch")
 local runner = require("jesttice.runner")
 local reporter = require("jesttice.reporter")

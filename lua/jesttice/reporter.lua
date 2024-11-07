@@ -41,9 +41,23 @@ end
 --- @param buf number
 --- @param jest JestResult
 function M.report_test_signs(base, file, buf, jest)
-  local tree = vim.treesitter.get_parser(buf):parse(true)[1]
-  local query = vim.treesitter.query.get("typescript", "jesttice-test")
   local pattern = escape_pattern(file) .. ":(%d+):(%d+)"
+
+  local tree, query
+  if file:find("%.ts$") then
+    tree = vim.treesitter.get_parser(buf, "typescript"):parse(true)[1]
+    query = vim.treesitter.query.get("typescript", "jesttice-test")
+  elseif file:find("%.js$") then
+    tree = vim.treesitter.get_parser(buf, "javascript"):parse(true)[1]
+    query = vim.treesitter.query.get("javascript", "jesttice-test")
+  elseif file:find("%.tsx$") then
+    tree = vim.treesitter.get_parser(buf, "typescriptreact"):parse(true)[1]
+    query = vim.treesitter.query.get("typescriptreact", "jesttice-test")
+  elseif file:find("%.jsx$") then
+    tree = vim.treesitter.get_parser(buf, "javascriptreact"):parse(true)[1]
+    query = vim.treesitter.query.get("javascriptreact", "jesttice-test")
+  end
+
 
   local node = tree:root()
 

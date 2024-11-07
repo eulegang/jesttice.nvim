@@ -37,15 +37,7 @@ function M.report_test_signs(base, file, buf, jest)
   local tree = vim.treesitter.get_parser(buf):parse(true)[1]
   local query = vim.treesitter.query.get("typescript", "jesttice-test")
 
-  print(vim.inspect(tree))
-
   local node = tree:root()
-  print(vim.inspect({
-    start = { node:start() },
-    e = { node:end_() },
-    range = { node:range() },
-    tree = tree,
-  }))
 
   if query ~= nil and tree ~= nil then
     for id, n in query:iter_captures(node, buf, 0, -1) do
@@ -57,7 +49,7 @@ function M.report_test_signs(base, file, buf, jest)
 
         local pass = true
 
-        for __, result in ipairs(jest.testResults) do
+        for _, result in ipairs(jest.testResults) do
           for _, assert in pairs(result.assertionResults) do
             for _, message in pairs(assert.failureMessages) do
               local _, _, row, _ = message:find(file .. ":(%d+):(%d+)")
@@ -68,13 +60,6 @@ function M.report_test_signs(base, file, buf, jest)
             end
           end
         end
-
-        print(vim.inspect({
-          id = id,
-          pass = pass,
-          srow = srow,
-          erow = erow,
-        }))
 
         local t = pass and "JestticePass" or "JestticeFail"
         local lnum = srow

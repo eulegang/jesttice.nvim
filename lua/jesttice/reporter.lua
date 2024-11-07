@@ -7,7 +7,7 @@ local diag_namespace = vim.api.nvim_create_namespace("jesttice")
 --- @param file string
 --- @param buf number
 --- @param jest JestResult
-local function report_test_diagnostics(base, file, buf, jest)
+function M.report_test_diagnostics(base, file, buf, jest)
   vim.diagnostic.reset(diag_namespace, buf)
 
   for _, result in pairs(jest.testResults) do
@@ -33,7 +33,7 @@ end
 --- @param file string
 --- @param buf number
 --- @param jest JestResult
-local function report_test_signs(base, file, buf, jest)
+function M.report_test_signs(base, file, buf, jest)
   local tree = vim.treesitter.get_parser(buf):parse(true)[1]
   local query = vim.treesitter.query.get("typescript", "jesttice-test")
 
@@ -92,7 +92,7 @@ end
 --- @param file string
 --- @param buf number
 --- @param jest JestResult
-local function report_coverage_signs(base, file, buf, jest)
+function M.report_coverage_signs(base, file, buf, jest)
   local coverage = jest.coverageMap[base .. "/" .. file]
 
   vim.fn.sign_unplace("jesttice", { buffer = buf })

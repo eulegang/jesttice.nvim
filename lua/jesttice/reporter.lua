@@ -3,18 +3,25 @@ local opts = {}
 
 local diag_namespace = vim.api.nvim_create_namespace("jesttice")
 
+--- @param pattern string
+--- @return string
+local function escape_pattern(pattern)
+  local res = pattern:gsub("([%-%.%%%(%)%+%*%?%[%^%$%]])", "%%%1")
+  return res
+end
+
 --- @param base string
 --- @param file string
 --- @param buf number
 --- @param jest JestResult
 function M.report_test_diagnostics(base, file, buf, jest)
+  local pattern = escape_pattern(file) .. ":(%d+):(%d+)"
   vim.diagnostic.reset(diag_namespace, buf)
 
   for _, result in pairs(jest.testResults) do
     for _, assert in pairs(result.assertionResults) do
       for _, message in pairs(assert.failureMessages) do
-        local pat = file .. ":(%d+):(%d+)"
-        local _, _, row, col = string.find(message, pat)
+        local _, _, row, col = message:find(pattern)
         vim.diagnostic.set(diag_namespace, buf, {
           {
             lnum = tonumber(row) - 1,
@@ -36,6 +43,7 @@ end
 function M.report_test_signs(base, file, buf, jest)
   local tree = vim.treesitter.get_parser(buf):parse(true)[1]
   local query = vim.treesitter.query.get("typescript", "jesttice-test")
+  local pattern = escape_pattern(file) .. ":(%d+):(%d+)"
 
   local node = tree:root()
 
@@ -52,7 +60,7 @@ function M.report_test_signs(base, file, buf, jest)
         for _, result in ipairs(jest.testResults) do
           for _, assert in pairs(result.assertionResults) do
             for _, message in pairs(assert.failureMessages) do
-              local _, _, row, _ = message:find(file .. ":(%d+):(%d+)")
+              local _, _, row, _ = message:find(pattern)
 
               if srow <= tonumber(row) and tonumber(row) <= erow then
                 pass = false

@@ -59,4 +59,36 @@ describe("report", function()
       ))
     end)
   end)
+
+  describe("regex sigil in filename", function()
+    local jest_result = {
+      numTotalTests = 10,
+      numPassedTests = 9,
+      coverageMap = {},
+      testResults = {
+        {
+          success = false,
+          assertionResults = {
+            {
+              failureMessages = {
+                "(src/base-api/tests/x.test.ts:30:24)"
+              }
+            }
+          }
+        }
+      }
+    }
+
+    it("should set diagnostic", function()
+      stub(vim.diagnostic, "reset")
+      stub(vim.diagnostic, "set")
+
+      mod.report_test_diagnostics(vim.fn.getcwd(), "src/base-api/tests/x.test.ts", 3, jest_result)
+
+      assert.spy(vim.diagnostic.set).was.called_with(match._, 3, match.all_of(
+        match.is_set("source", "jesttice"),
+        match.is_set("lnum", 29)
+      ))
+    end)
+  end)
 end)
